@@ -30,4 +30,35 @@ describe WeatherMeasurement do
 	 WeatherMeasurement.new(weather_data).date.should eq(Date.parse("2011-3-28"))
    end
   end
-end
+ end
+ describe WeatherChart do
+  let(:measurements) { [stub({ :rain => 0.0, :temperature => 64, :date => Date.parse("2011-3-28") })] } 
+  	it "should create an array of data points" do
+		WeatherChart.new.create(measurements).should include "['Mar28', 0.0, 64]"
+	end
+
+	it "should get the template" do
+		WeatherChart.new.create(measurements).should include "google.visualization.LineChart"
+	end
+	
+	let(:file_path) { "/tmp/austin_chart.html" }
+	# File path we want it to write to
+	let(:fake_html) { "fake-html" }
+   # Fake out the html because all we care about is message passing
+	it "should write to a file" do
+	  chart = WeatherChart.new
+	  chart.stub(:create) { fake_html }
+     # Stub the html and return the fake_html
+	  file_mock = mock("file")
+     # We are creating the idea of a file object. Mock out the idea of a file
+	  file_mock.stub(:write).with(fake_html)
+     # Mock should receive write with fake_html
+	  File.should_receive(:open).with(file_path, "w") { file_mock }
+	  # Stub out the file class whenever we receive it with file_path, w and return file mock
+     # Whenever we tell file to open this path with the file attributes, it is going to return the file object andmake sure that write is assigned to it. Then we call write with the fake html 
+	  # file received write with the HTML
+	  chart.create_to_file(file_path, measurements)
+     #
+	end
+  end
+
